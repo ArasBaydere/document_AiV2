@@ -1,0 +1,283 @@
+# Notka Şartname Asistanı
+
+Notka Şartname Asistanı, teknik şartname belgelerini analiz ederek en uygun ürün ve kategori eşleştirmesini yapabilen, yapay zeka destekli, modern ve modüler bir web uygulamasıdır. Kullanıcılar, .docx formatında şartname yükleyebilir veya metin girişiyle taleplerini iletebilir; sistem ise Google Gemini API ile analiz yaparak en uygun ürünleri ve kategorileri önerir.
+
+---
+
+## İçindekiler
+
+- [Özellikler](#özellikler)
+- [Ekran Görüntüleri](#ekran-görüntüleri)
+- [Mimari ve Teknolojiler](#mimari-ve-teknolojiler)
+- [Kurulum](#kurulum)
+- [Kullanım](#kullanım)
+- [Klasör ve Dosya Yapısı](#klasör-ve-dosya-yapısı)
+- [API Uç Noktaları](#api-uç-noktaları)
+- [Geliştirme ve Katkı](#geliştirme-ve-katkı)
+- [Güvenlik ve En İyi Uygulamalar](#güvenlik-ve-en-iyi-uygulamalar)
+- [Bilinen Sorunlar & Yol Haritası](#bilinen-sorunlar--yol-haritası)
+- [Lisans](#lisans)
+- [İletişim](#iletişim)
+
+---
+
+## Özellikler
+
+- **Kullanıcı Girişi ve Oturum Yönetimi:** Güvenli giriş, oturum açma/kapama, kullanıcıya özel sohbet geçmişi.
+- **Sohbet Tabanlı Arayüz:** Her kullanıcı için ayrı sohbetler, başlık değiştirme, sohbet silme, geçmişe erişim.
+- **Dosya ve Metin Analizi:** .docx dosya yükleyerek veya metin yazarak analiz başlatma.
+- **Yapay Zeka Destekli Analiz:** Google Gemini API ile teknik şartname analizi ve anahtar özellik çıkarımı.
+- **Kategori ve Ürün Eşleştirme:** Hiyerarşik kategori yapısı, anahtar kelimeyle ürün skorlama, veritabanı üzerinden ürün önerisi.
+- **AI Destekli Nihai Ürün Önerileri:** AI tarafından gerekçeli, teknik özellikleriyle birlikte ürün önerileri.
+- **Hata Ayıklama (Debug) Paneli:** Tüm önemli olaylar ve hatalar için canlı log izleme.
+- **Modern, Responsive ve Kullanıcı Dostu Arayüz:** TailwindCSS tabanlı, mobil uyumlu, hızlı ve sezgisel arayüz.
+- **Gerçek Zamanlı Mesaj Güncelleme:** Otomatik polling ile AI cevabı geldiği anda sohbetin güncellenmesi.
+
+---
+
+## Ekran Görüntüleri
+
+> (Buraya arayüzden ekran görüntüleri ekleyebilirsiniz.)
+
+---
+
+## Mimari ve Teknolojiler
+
+- **Backend:** Python, Flask, Flask-SQLAlchemy, Waitress
+- **Frontend:** HTML5, CSS3 (TailwindCSS altyapısı), Vanilla JavaScript
+- **Veritabanı:** MySQL (SQLAlchemy ORM ile)
+- **AI Entegrasyonu:** Google Gemini API (google-generativeai)
+- **Diğer:** python-docx (docx dosya okuma), PyMySQL, dotenv, logging
+- **Geliştirme:** Modüler dosya yapısı, Blueprint, Service ve Utility katmanları
+
+---
+
+## Kurulum
+
+### Gereksinimler
+
+- Python 3.8+
+- MySQL (veya uyumlu bir veritabanı)
+- Node.js (sadece frontend geliştirme için, opsiyonel)
+- [Google Gemini API Key](https://ai.google.dev/)
+
+### 1. Depoyu Klonlayın
+
+```bash
+git clone https://github.com/kullaniciadi/sartname_ai.git
+cd sartname_ai
+```
+
+### 2. Python Ortamı ve Bağımlılıklar
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows için: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+> **Not:** Gerekli paketler: Flask, Flask-SQLAlchemy, python-docx, google-generativeai, pymysql, waitress, vb.
+
+### 3. Veritabanı Kurulumu
+
+- MySQL'de `sartname_nokta` adında bir veritabanı oluşturun.
+- Gerekli tablolar ilk çalıştırmada otomatik oluşur (bkz: `models.py`).
+
+### 4. Ortam Değişkenleri
+
+`.env` dosyası oluşturun ve aşağıdaki gibi doldurun:
+
+```env
+GEMINI_API_KEY=your_google_gemini_api_key
+SECRET_KEY=your_flask_secret_key
+```
+
+> **Not:** `config.py` dosyasında API anahtarı ve diğer ayarların ortam değişkenlerinden okunduğundan emin olun.
+
+### 5. Uygulamayı Başlatma
+
+#### Geliştirme için:
+
+```bash
+python app.py
+```
+
+#### Üretim için (Waitress ile):
+
+```bash
+python run.py
+```
+
+Uygulama varsayılan olarak [http://localhost:8000](http://localhost:8000) adresinde çalışır.
+
+---
+
+## Kullanım
+
+1. **Giriş Yapın:** Varsayılan kullanıcılar `config.py` içinde tanımlıdır.
+2. **Sohbet Başlatın:** Yeni bir sohbet başlatın veya mevcut bir sohbeti seçin.
+3. **Mesaj veya Dosya Gönderin:** Mesaj yazın veya .docx dosyanızı yükleyin.
+4. **AI Analizini Bekleyin:** Yapay zeka analizini tamamladığında, önerilen kategoriler ve ürünler sohbet ekranında görüntülenecektir.
+5. **Debug Panelini Kullanın:** Sağ üstteki debug paneli ile sistem loglarını izleyebilirsiniz.
+
+---
+
+## Klasör ve Dosya Yapısı
+
+```
+sartname_ai/
+│
+├── app.py                # Ana Flask uygulaması
+├── config.py             # Konfigürasyon ayarları
+├── models.py             # Veritabanı modelleri
+├── run.py                # Waitress ile başlatıcı
+├── utils.py              # Yardımcı fonksiyonlar
+│
+├── routes/               # API ve sayfa rotaları (auth, chat)
+│   ├── auth.py
+│   ├── chat.py
+│   └── __init__.py
+│
+├── services/             # Harici servisler (Gemini API entegrasyonu)
+│   └── gemini_service.py
+│
+├── static/               # Statik dosyalar (CSS, JS)
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── main.js
+│
+├── templates/            # HTML şablonları (Jinja2)
+│   ├── index.html
+│   └── login.html
+│
+├── uploads/              # Yüklenen dosyalar
+└── README.md             # Proje dokümantasyonu
+```
+
+---
+
+**Ekstra Notlar:**
+- Proje adını, github adresini, iletişim ve katkı sağlayanlar kısmını kendine göre güncelleyebilirsin.
+- API endpoint açıklamalarını, örnek istek/yanıtlarla daha da detaylandırabilirsin.
+- Ekran görüntüleri ve örnek kullanım adımlarını eklemek, kullanıcılar için çok faydalı olur.
+- SSS ve Yol Haritası bölümleri, projeyi büyütmek isteyenler için yol göstericidir.
+
+Daha fazla teknik detay, örnek API yanıtları veya başka bir özel başlık ister misin?  
+İstersen, bu README’yi doğrudan projenin `README.md` dosyasına ekleyebilirim!
+
+---
+
+## API Uç Noktaları
+
+### Kimlik Doğrulama
+
+- `GET /login` — Giriş formu
+- `POST /login` — Giriş işlemi
+- `GET /logout` — Oturumu kapat
+
+### Sohbet ve Mesajlar
+
+- `GET /` — Ana sohbet arayüzü
+- `GET /api/chats` — Kullanıcıya ait sohbetlerin listesi
+- `POST /api/chat/new` — Yeni sohbet oluştur
+- `GET /api/chat/<chat_id>/messages` — Belirli bir sohbetin mesajları
+- `POST /api/chat/<chat_id>/rename` — Sohbet başlığını değiştir
+- `DELETE /api/chat/<chat_id>/delete` — Sohbeti sil
+- `POST /chat` — Mesaj ve/veya dosya gönder (AI analiz başlatır)
+
+### Debug
+
+- `GET /api/debug_log` — Canlı hata ayıklama logları
+
+---
+
+## Teknik Detaylar
+
+### AI Entegrasyonu
+
+- **GeminiService** ile Google Gemini API'ye prompt gönderilir.
+- AI, şartname içeriğinden kategori ve anahtar teknik özellikleri JSON olarak döndürür.
+- Backend, bu kategorilerdeki ürünleri çeker ve anahtar kelimelerle skorlar.
+- En iyi ürünler tekrar Gemini’ye gönderilir, AI’dan nihai öneri ve gerekçeler alınır.
+
+### Kategori ve Ürün Yönetimi
+
+- Kategoriler hiyerarşik olarak veritabanında tutulur.
+- Ürünler, kategoriye bağlı olarak saklanır ve anahtar kelime eşleşmesiyle skorlanır.
+
+### Dosya Yükleme
+
+- Sadece `.docx` dosyaları kabul edilir.
+- Dosya içeriği okunur, geçici olarak kaydedilir ve analiz sonrası silinir.
+
+### Loglama ve Debug
+
+- Tüm önemli olaylar ve hatalar bellekte tutulur ve debug panelinde izlenebilir.
+- Gelişmiş loglama için ileride dosya veya veritabanı tabanlı loglama önerilir.
+
+---
+
+## Geliştirme ve Katkı
+
+- Kodunuzu modüler ve okunabilir tutmaya özen gösterin.
+- Yeni özellik eklerken ilgili dosya/servis/route yapısını takip edin.
+- Pull request göndermeden önce kodunuzu test edin.
+- Test altyapısı için pytest ve/veya Selenium önerilir.
+- Veritabanı migration için Alembic entegrasyonu önerilir.
+- Dockerfile ve docker-compose ile kolay kurulum için katkı sağlayabilirsiniz.
+
+---
+
+## Güvenlik ve En İyi Uygulamalar
+
+- **Şifreler:** Şu anda düz metin olarak saklanıyor, hash’li saklama önerilir.
+- **API Anahtarları:** Ortam değişkenlerinde saklanmalı, kodda asla düz metin olmamalı.
+- **Dosya Yükleme:** Sadece güvenli uzantılara izin verin, dosya adlarını `secure_filename` ile işleyin.
+- **Oturum Yönetimi:** Flask’ın session mekanizması kullanılıyor, üretimde HTTPS zorunlu olmalı.
+- **Veritabanı:** Kullanıcı yönetimi ve şifre sıfırlama gibi gelişmiş özellikler eklenebilir.
+
+---
+
+## Bilinen Sorunlar & Yol Haritası
+
+- [ ] Şifreler hash’li saklanmalı.
+- [ ] Dosya yükleme sadece .docx ile sınırlı, PDF desteği eklenebilir.
+- [ ] AI işlemleri uzun sürebilir, arka planda işleme (Celery gibi) ileride eklenebilir.
+- [ ] Gerçek zamanlı güncelleme için WebSocket entegrasyonu önerilir.
+- [ ] Kullanıcı yönetimi ve roller geliştirilmeli.
+- [ ] Otomatik testler ve CI/CD pipeline eklenmeli.
+
+---
+
+## Lisans
+
+MIT License
+
+---
+
+## İletişim
+
+Her türlü soru, öneri veya katkı için lütfen [github issues](https://github.com/kullaniciadi/sartname_ai/issues) üzerinden iletişime geçin.
+
+---
+
+## Sıkça Sorulan Sorular (SSS)
+
+### S: AI cevabı neden bazen geç geliyor?
+C: Google Gemini API ile yapılan analizler, şartname içeriğinin uzunluğuna ve AI sunucusunun yoğunluğuna göre birkaç saniye sürebilir. Otomatik polling ile cevap geldiği anda sohbet ekranı güncellenir.
+
+### S: Farklı dosya türleri yükleyebilir miyim?
+C: Şu anda sadece `.docx` dosyaları desteklenmektedir. PDF ve diğer formatlar için geliştirme planlanmaktadır.
+
+### S: Kendi ürün ve kategorilerimi nasıl eklerim?
+C: Veritabanına doğrudan ekleme yapabilir veya ileride eklenecek olan yönetim paneli ile kolayca ekleyebilirsiniz.
+
+---
+
+## Katkı Sağlayanlar
+
+- [Senin adın veya ekibin]
+- [Diğer katkıcılar]
+
+---
