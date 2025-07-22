@@ -1,4 +1,6 @@
-# utils.py
+"""
+Yardımcı fonksiyonlar: log, dosya işleme, ürün eşleştirme ve skorlamada kullanılır.
+"""
 
 from datetime import datetime
 from functools import wraps
@@ -8,11 +10,16 @@ import os
 import json
 import re
 from config import Config # Config sınıfını import ediyoruz
+import difflib
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
+from rapidfuzz import fuzz
 
 # --- Hata Ayıklama Log Sistemi ---
 _debug_log = [] # Bu liste uygulama çalıştığı sürece bellekte kalacak
 
 def add_debug_message(message_text, level="INFO"):
+    """Uygulama içi debug loguna zaman damgalı bir mesaj ekler. Log boyutu aşıldığında en eski logu siler."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     log_entry = {
         "timestamp": timestamp,
@@ -27,12 +34,14 @@ def add_debug_message(message_text, level="INFO"):
         _debug_log.pop(0) # Eski logları sil
 
 def get_debug_log_entries():
+    """Bellekteki debug log listesini döndürür."""
     return _debug_log
 
 # --- / Hata Ayıklama Log Sistemi ---
 
 # --- Oturum ve Yetkilendirme Dekoratoru ---
 def login_required(f):
+    """Kullanıcı oturumu yoksa login sayfasına yönlendirir."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'logged_in' not in session:
@@ -42,28 +51,40 @@ def login_required(f):
     return decorated_function
 
 # --- Belge İşleme ---
-def process_docx_file(file):
-    add_debug_message(f"DOCX dosyası işleniyor: {file.filename}", level="INFO")
-    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], file.filename)
+def process_uploaded_file_general(file):
+    """Hem .docx hem .txt dosyaları işler ve metin içeriğini döndürür. Geçersiz dosya tipinde None döner."""
+    from werkzeug.utils import secure_filename
+    add_debug_message(f"Dosya işleniyor: {file.filename}", level="INFO")
+    filename = secure_filename(file.filename)
+    ext = filename.lower().rsplit('.', 1)[-1]
+    if ext not in ('docx', 'txt'):
+        add_debug_message(f'Yüklenen dosya uzantısı geçersiz: {filename}', level="ERROR")
+        return None
+    filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file_raw_content = ""
     try:
         file.save(filepath)
         add_debug_message(f"Dosya geçici olarak kaydedildi: {filepath}", level="INFO")
-
-        document = Document(filepath)
-        docx_text = []
-        for para in document.paragraphs:
-            docx_text.append(para.text)
-        file_raw_content = "\n".join(docx_text)
-        add_debug_message("DOCX içeriği başarıyla metne çevrildi.", level="INFO")
+        if ext == 'docx':
+            from docx import Document
+            document = Document(filepath)
+            docx_text = [para.text for para in document.paragraphs]
+            file_raw_content = "\n".join(docx_text)
+        elif ext == 'txt':
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                file_raw_content = f.read()
+        add_debug_message(f"{ext.upper()} içeriği başarıyla metne çevrildi.", level="INFO")
         return file_raw_content
     except Exception as e:
-        add_debug_message(f'Belge dönüştürme hatası: {str(e)}', level="ERROR")
+        add_debug_message(f'Dosya dönüştürme hatası: {str(e)}', level="ERROR")
         return None
     finally:
-        if os.path.exists(filepath):
-            os.remove(filepath) # Geçici dosyayı sil
-            add_debug_message(f"Geçici dosya silindi: {filepath}", level="INFO")
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                add_debug_message(f"Geçici dosya silindi: {filepath}", level="INFO")
+        except Exception as e:
+            add_debug_message(f"Geçici dosya silinirken hata: {str(e)}", level="ERROR")
 
 # --- Veritabanı ve Formatlama Fonksiyonları ---
 def get_all_categories_with_hierarchy_sqlalchemy():
@@ -176,4 +197,58 @@ def filter_and_score_products_simple(products, extracted_specs_keywords):
     # En yüksek skora göre sırala
     scored_products.sort(key=lambda x: x['score'], reverse=True)
     add_debug_message(f"Toplam {len(scored_products)} ürün skorlandı. En yüksek skor: {scored_products[0]['score'] if scored_products else 'N/A'}", level="INFO")
+    return scored_products
+
+def score_single_product(product, all_specs_keywords_lower):
+    score = 0
+    product_text = ((getattr(product, 'OzelliklerTR', '') or "") + " " + (getattr(product, 'BilgiTR', '') or "")).lower()
+    matched_keywords_for_product = []
+    for keyword in all_specs_keywords_lower:
+        if not keyword:
+            continue
+        if keyword in product_text:
+            score += 2
+            matched_keywords_for_product.append(keyword)
+        else:
+            words = keyword.split()
+            for w in words:
+                if w and w in product_text:
+                    score += 1
+                    matched_keywords_for_product.append(w)
+            for word in product_text.split():
+                try:
+                    similarity = fuzz.ratio(keyword, word) / 100.0
+                    if similarity >= 0.8:
+                        score += 1
+                        matched_keywords_for_product.append(f"{keyword}~{word}")
+                        break
+                except Exception:
+                    pass
+    return {
+        'product': product,
+        'score': score,
+        'matched_keywords': list(set(matched_keywords_for_product))
+    }
+
+def filter_and_score_products_advanced(products, extracted_specs_keywords):
+    add_debug_message(f"Skorlama BAŞLADI (multiprocessing+rapidfuzz). Ürün sayısı: {len(products)}, Anahtar kelime sayısı: {sum(len(v) for v in extracted_specs_keywords.values())}", level="INFO")
+    start_time = time.time()
+    scored_products = []
+    all_specs_keywords_lower = [kw.lower().strip() for kw_list in extracted_specs_keywords.values() for kw in kw_list]
+    try:
+        with ProcessPoolExecutor() as executor:
+            future_to_product = {executor.submit(score_single_product, product, all_specs_keywords_lower): product for product in products}
+            for idx, future in enumerate(as_completed(future_to_product)):
+                if idx % 10 == 0:
+                    add_debug_message(f"Multiprocessing skorlama: {idx}. ürün tamamlandı...", level="DEBUG")
+                try:
+                    scored_products.append(future.result())
+                except Exception as e:
+                    add_debug_message(f"Bir ürün skorlanırken hata: {str(e)}", level="ERROR")
+        add_debug_message(f"Skorlama BİTTİ (multiprocessing). Toplam süre: {time.time() - start_time:.2f} sn, Toplam skorlanan ürün: {len(scored_products)}", level="INFO")
+    except Exception as e:
+        add_debug_message(f"Multiprocessing skorlama ana döngüsünde hata: {str(e)}", level="ERROR")
+        raise
+    scored_products.sort(key=lambda x: x['score'], reverse=True)
+    add_debug_message(f"Toplam {len(scored_products)} ürün skorlandı (multiprocessing). En yüksek skor: {scored_products[0]['score'] if scored_products else 'N/A'}", level="INFO")
     return scored_products

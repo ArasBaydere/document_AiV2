@@ -99,20 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Yükleniyor göstergesini ayarlar
     function showLoading(show) {
-        console.log(`showLoading çağrıldı: ${show ? 'true' : 'false'}`); // Hata ayıklama için eklendi
-        if (show) {
-            loadingIndicator.classList.remove('hidden');
-            messageInputArea.classList.add('disabled'); // .disabled sınıfı opacity ve pointer-events'ı ayarlar
-            sendMessageBtn.disabled = true;
-            attachFileBtn.disabled = true;
-            messageInput.disabled = true;
-        } else {
-            loadingIndicator.classList.add('hidden');
-            messageInputArea.classList.remove('disabled');
-            sendMessageBtn.disabled = false;
-            attachFileBtn.disabled = false;
-            messageInput.disabled = false;
-        }
+        // Artık loading göstergesi yok, fonksiyon boş bırakıldı.
     }
 
     // Sohbete yeni mesaj ekler
@@ -241,11 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = fileInput.files[0];
 
         if (!messageText && !file) {
-            alert('Lütfen bir mesaj yazın veya bir dosya seçin.');
+            showToast('Lütfen bir mesaj yazın veya bir dosya seçin.', 'error');
             return;
         }
         if (!currentChatId) {
-            alert('Lütfen önce bir sohbet seçin veya yeni bir sohbet başlatın.');
+            showToast('Lütfen önce bir sohbet seçin veya yeni bir sohbet başlatın.', 'error');
             return;
         }
 
@@ -255,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (file) {
             addMessageToChat('user', `[Dosya Yüklendi: ${file.name}]`, new Date());
         }
+        addBotTypingBubble(); // <-- Burada ekle
 
         showLoading(true);
         messageInput.value = '';
@@ -287,22 +275,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             if (data.success) {
-                // Hemen güncellemeye çalış
-                await selectChat(currentChatId);
-
-                // Eğer bot cevabı hemen gelmediyse, polling başlat
+                removeBotTypingBubble();
+                // Bot yanıtı hemen geldiyse polling yapma, mesajları güncelle
                 const response2 = await fetch(`/api/chat/${currentChatId}/messages`);
-                const chatData = await response2.json();
-                if (chatData.messages.length === lastMessageCount) {
+                if (response2.ok) {
+                    const chatData = await response2.json();
+                    // Son mesaj bot ise ekrana getir
+                    if (chatData.messages.length > lastMessageCount) {
+                        displayChatMessages(chatData.messages);
+                    } else {
+                        // Bot yanıtı hemen gelmediyse polling başlat
+                        await pollForNewBotMessage(currentChatId, lastMessageCount);
+                    }
+                } else {
+                    // Yanıt alınamazsa polling başlat
                     await pollForNewBotMessage(currentChatId, lastMessageCount);
                 }
             } else {
-                alert('Hata: ' + data.message);
+                removeBotTypingBubble();
+                showToast('Hata: ' + data.message, 'error');
                 if (chatMessages.lastChild) { chatMessages.lastChild.remove(); }
             }
         } catch (error) {
+            removeBotTypingBubble();
             console.error('Mesaj gönderme hatası:', error);
-            alert('Mesaj gönderme başarısız: ' + error.message);
+            showToast('Mesaj gönderme başarısız: ' + error.message, 'error');
             if (chatMessages.lastChild) { chatMessages.lastChild.remove(); }
         } finally {
             showLoading(false);
@@ -313,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Polling fonksiyonu: Belirli aralıklarla yeni bot mesajı geldi mi kontrol eder
-    async function pollForNewBotMessage(chatId, lastMessageCount, maxAttempts = 15, interval = 2000) {
+    async function pollForNewBotMessage(chatId, lastMessageCount, maxAttempts = 10, interval = 1200) {
         let attempts = 0;
         while (attempts < maxAttempts) {
             const response = await fetch(`/api/chat/${chatId}/messages`);
@@ -321,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 // Yeni mesaj geldi mi kontrol et
                 if (data.messages.length > lastMessageCount) {
+                    removeBotTypingBubble();
                     displayChatMessages(data.messages);
                     return true; // Yeni mesaj geldi
                 }
@@ -328,17 +326,27 @@ document.addEventListener('DOMContentLoaded', () => {
             await new Promise(resolve => setTimeout(resolve, interval));
             attempts++;
         }
+        showToast('Yanıt gecikti. Lütfen sayfayı yenileyin veya tekrar deneyin.', 'error', 6000);
         return false; // Süre doldu, yeni mesaj gelmedi
     }
 
     // Yeni sohbet oluşturma fonksiyonu
     async function createNewChat() {
-        const title = prompt("Yeni sohbet başlığını girin:", `Yeni Sohbet ${new Date().toLocaleString()}`);
+        const { value: title } = await Swal.fire({
+            title: 'Yeni sohbet başlığı',
+            input: 'text',
+            inputLabel: 'Başlık',
+            inputPlaceholder: `Yeni Sohbet ${new Date().toLocaleString()}`,
+            showCancelButton: true,
+            confirmButtonText: 'Oluştur',
+            cancelButtonText: 'Vazgeç',
+            inputValidator: (value) => {
+                if (!value) return 'Başlık boş olamaz!';
+            }
+        });
         if (!title) return;
-
         showLoading(true);
         try {
-            console.log("Yeni sohbet oluşturuluyor..."); // Hata ayıklama için eklendi
             const response = await fetch('/api/chat/new', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -349,34 +357,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Yeni sohbet oluşturulamadı.');
             }
             const newChat = await response.json();
-            await loadChatList(); // Sohbet listesini yeniden yükle
-            selectChat(newChat.id); // Yeni oluşturulan sohbeti seç
+            await loadChatList();
+            selectChat(newChat.id);
             currentChatTitle.textContent = newChat.title;
-            console.log(`Yeni sohbet başarıyla oluşturuldu: ID=${newChat.id}`); // Hata ayıklama için eklendi
+            Swal.fire({ icon: 'success', title: 'Sohbet oluşturuldu', showConfirmButton: false, timer: 1200 });
         } catch (error) {
-            console.error('Yeni sohbet oluşturulurken hata:', error);
-            alert('Yeni sohbet oluşturulamadı: ' + error.message);
+            Swal.fire({ icon: 'error', title: 'Hata', text: 'Yeni sohbet oluşturulamadı: ' + error.message });
         } finally {
-            console.log("createNewChat finally bloğu çalıştı."); // Hata ayıklama için eklendi
             showLoading(false);
-            if (debugPanelOpen) {
-                fetchDebugLogs();
-            }
+            if (debugPanelOpen) fetchDebugLogs();
         }
     }
 
     // Sohbeti yeniden adlandırma fonksiyonu
     async function renameChat() {
         if (!currentChatId) {
-            alert('Yeniden adlandırmak için önce bir sohbet seçin.');
+            Swal.fire({ icon: 'warning', title: 'Uyarı', text: 'Yeniden adlandırmak için önce bir sohbet seçin.' });
             return;
         }
-        const newTitle = prompt("Sohbetin yeni başlığını girin:", currentChatTitle.textContent);
+        const { value: newTitle } = await Swal.fire({
+            title: 'Sohbeti yeniden adlandır',
+            input: 'text',
+            inputLabel: 'Yeni başlık',
+            inputValue: currentChatTitle.textContent,
+            showCancelButton: true,
+            confirmButtonText: 'Kaydet',
+            cancelButtonText: 'Vazgeç',
+            inputValidator: (value) => {
+                if (!value) return 'Başlık boş olamaz!';
+                if (value.trim() === currentChatTitle.textContent.trim()) return 'Başlık değişmedi!';
+            }
+        });
         if (!newTitle || newTitle.trim() === currentChatTitle.textContent.trim()) return;
-
         showLoading(true);
         try {
-            console.log(`Sohbet ID ${currentChatId} yeniden adlandırılıyor...`); // Hata ayıklama için eklendi
             const response = await fetch(`/api/chat/${currentChatId}/rename`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -388,66 +402,82 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.message || 'Sohbet yeniden adlandırılamadı.');
             }
             currentChatTitle.textContent = newTitle;
-            await loadChatList(); // Sohbet listesini güncelleyelim
-            console.log(`Sohbet ID ${currentChatId} başarıyla yeniden adlandırıldı.`); // Hata ayıklama için eklendi
+            await loadChatList();
+            Swal.fire({ icon: 'success', title: 'Başlık güncellendi', showConfirmButton: false, timer: 1200 });
         } catch (error) {
-            console.error('Sohbet yeniden adlandırılırken hata:', error);
-            alert('Sohbet yeniden adlandırılamadı: ' + error.message);
+            Swal.fire({ icon: 'error', title: 'Hata', text: 'Sohbet yeniden adlandırılamadı: ' + error.message });
         } finally {
-            console.log("renameChat finally bloğu çalıştı."); // Hata ayıklama için eklendi
             showLoading(false);
-            if (debugPanelOpen) {
-                fetchDebugLogs();
-            }
+            if (debugPanelOpen) fetchDebugLogs();
         }
     }
 
     // Sohbet silme fonksiyonu
     async function deleteChat() {
         if (!currentChatId) {
-            alert('Silmek için önce bir sohbet seçin.');
+            Swal.fire({ icon: 'warning', title: 'Uyarı', text: 'Silmek için önce bir sohbet seçin.' });
             return;
         }
-        if (!confirm('Bu sohbeti ve tüm mesajlarını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-            return;
-        }
-
+        const result = await Swal.fire({
+            title: 'Sohbeti sil',
+            text: 'Bu sohbeti ve tüm mesajlarını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Evet, sil',
+            cancelButtonText: 'Vazgeç',
+        });
+        if (!result.isConfirmed) return;
         showLoading(true);
         try {
-            console.log(`Sohbet ID ${currentChatId} siliniyor...`); // Hata ayıklama için eklendi
             const response = await fetch(`/api/chat/${currentChatId}/delete`, {
                 method: 'DELETE'
             });
             if (!response.ok) {
                 if (response.status === 401) { window.location.href = '/login'; return; }
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Sohbet silinirken hata oluştu.');
+                throw new Error(errorData.message || 'Sohbet silinemedi.');
             }
-            alert('Sohbet başarıyla silindi.');
-            currentChatId = null; // Aktif sohbeti sıfırla
+            await loadChatList();
             currentChatTitle.textContent = 'Bir sohbet seçin veya yeni bir tane başlatın';
-            chatMessages.innerHTML = `
-                <div class="empty-chat-message">
-                    <p>👋 Merhaba! Notka Şartname Asistanı'na hoş geldiniz.</p>
-                    <p>Yeni bir sohbet başlatın veya soldan mevcut bir sohbeti seçin.</p>
-                    <p>Şartname dosyanızı yükleyerek veya metin girerek başlayabilirsiniz.</p>
-                </div>
-            `;
-            messageInputArea.classList.add('disabled'); // Girişi deaktive et
-            renameChatBtn.style.display = 'none';
-            deleteChatBtn.style.display = 'none';
-            await loadChatList(); // Sohbet listesini yeniden yükle
-            console.log(`Sohbet ID ${currentChatId} başarıyla silindi.`); // Hata ayıklama için eklendi
+            Swal.fire({ icon: 'success', title: 'Sohbet silindi', showConfirmButton: false, timer: 1200 });
         } catch (error) {
-            console.error('Sohbet silinirken hata:', error);
-            alert('Sohbet silinemedi: ' + error.message);
+            Swal.fire({ icon: 'error', title: 'Hata', text: 'Sohbet silinemedi: ' + error.message });
         } finally {
-            console.log("deleteChat finally bloğu çalıştı."); // Hata ayıklama için eklendi
             showLoading(false);
-            if (debugPanelOpen) {
-                fetchDebugLogs();
-            }
+            if (debugPanelOpen) fetchDebugLogs();
         }
+    }
+
+    // Modern toast/alert gösterimi
+    function showToast(message, type = 'error', duration = 4000) {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.top = '20px';
+            toastContainer.style.left = '50%';
+            toastContainer.style.transform = 'translateX(-50%)';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.background = type === 'error' ? '#e74c3c' : '#27ae60';
+        toast.style.color = '#fff';
+        toast.style.padding = '12px 24px';
+        toast.style.margin = '8px 0';
+        toast.style.borderRadius = '6px';
+        toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        toast.style.fontSize = '1rem';
+        toast.style.opacity = '0.95';
+        toast.style.transition = 'opacity 0.3s';
+        toast.innerText = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
     }
 
     // --- Debug Panel Fonksiyonları ---
@@ -500,6 +530,28 @@ document.addEventListener('DOMContentLoaded', () => {
         debugLogContent.scrollTop = debugLogContent.scrollHeight; // En alta kaydır
     }
 
+    // Animasyonlu bot bekleme baloncuğu ekle
+    function addBotTypingBubble() {
+        // Önce varsa eskiyi kaldır
+        const existing = document.getElementById('bot-typing-bubble');
+        if (existing) existing.remove();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message bot';
+        messageDiv.id = 'bot-typing-bubble';
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'message-bubble bot-typing-bubble';
+        messageBubble.innerHTML = '<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span> <span style="margin-left:8px; color:#a21caf; font-weight:500;">Yanıt hazırlanıyor...</span>';
+        messageDiv.appendChild(messageBubble);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Bot bekleme baloncuğunu kaldır
+    function removeBotTypingBubble() {
+        const existing = document.getElementById('bot-typing-bubble');
+        if (existing) existing.remove();
+    }
+
 
     // --- Olay Dinleyicileri ---
     newChatBtn.addEventListener('click', createNewChat);
@@ -534,9 +586,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadChatList();
 
     // Otomatik periyodik yenileme
-    setInterval(() => {
-        if (currentChatId) {
-            selectChat(currentChatId);
-        }
-    }, 3000);
+    // setInterval(() => {
+    //     if (currentChatId) {
+    //         selectChat(currentChatId);
+    //     }
+    // }, 3000);
 });

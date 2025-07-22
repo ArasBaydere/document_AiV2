@@ -105,7 +105,7 @@ class GeminiService:
         add_debug_message(f"Gemini Aşama 1 Prompt hazırlandı (ilk 500 karakter: '{stage1_prompt[:500]}')", level="DEBUG")
 
         response_text = self._call_gemini(stage1_prompt, initial_history=[
-            {'role': 'model', 'parts': ["Ben Notka Şartname Asistanıyım. Şimdi belgeyi kategorilerle eşleştiriyorum ve anahtar özelliklerini çıkarıyorum."]}
+            {'role': 'model', 'parts': ["Ben Nokta Şartname Asistanıyım. Şimdi belgeyi kategorilerle eşleştiriyorum ve anahtar özelliklerini çıkarıyorum."]}
         ])
         
         json_match = re.search(r'```json\n({.*?})\n```', response_text, re.DOTALL)
@@ -122,7 +122,7 @@ class GeminiService:
             add_debug_message("Gemini Aşama 1 yanıtında JSON bloğu bulunamadı.", level="WARNING")
             raise Exception(f"Kategori ve özellik eşleştirmesi için beklenen JSON formatı bulunamadı. Orijinal yanıt: {response_text}")
 
-    def get_product_recommendations(self, file_raw_content, user_message_text, extracted_specifications, recommended_products_for_gemini_stage3):
+    def get_product_recommendations(self, file_raw_content, user_message_text, extracted_specifications, recommended_products_for_gemini_stage3, max_products=4):
         add_debug_message("Gemini Aşama 3 başlatılıyor: Nihai Ürün Seçimi ve Sunumu.", level="INFO")
         products_json_string = json.dumps(recommended_products_for_gemini_stage3, ensure_ascii=False, indent=2)
         add_debug_message(f"Aşama 3 için ürün JSON stringi hazırlandı (ilk 200 karakter: {products_json_string[:200]}...)", level="DEBUG")
@@ -140,9 +140,10 @@ class GeminiService:
             f"--- /FİLTRELENMİŞ VE POTANSİYEL OLARAK UYGUN ÜRÜN LİSTESİ ---\n\n"
             "Yukarıdaki tüm bilgileri (orijinal şartname, çıkarılan gereksinimler ve filtrelenmiş ürün listesi) dikkatlice analiz et. "
             "Amacın, şartnamedeki tüm gereksinimleri (özellikle 'ŞARTNAMEDEN ÇIKARILAN ANAHTAR TEKNİK GEREKSİNİMLER' kısmındaki maddeler ve orijinal şartname içeriği) en iyi ve en kesin şekilde karşılayan ürünleri seçmektir.\n"
-            "Seçtiğin her ürün için ürün kodu, ürün adı, 'OzelliklerTR' ve 'BilgiTR' alanlarından alınan en ilgili 3-5 adet anahtar teknik özelliği (özellikle şartnamede aranan) belirt. Bu özellikleri madde madde listele. Ayrıca bu ürünü neden önerdiğine dair kısa ve açıklayıcı bir gerekçe (justification) sun.\n"
-            "Minimum 3, maksimum 7 ürün önerisi yap. Eğer 3'ten az uygun ürün bulursan, bulduğun kadarını öner.\n\n"
-            "Yanıtını SADECE aşağıdaki JSON formatında döndür. 'recommended_products' anahtarı altında bir dizi olmalı, her dizi elemanı 'product_code', 'product_name', 'key_features' (array olarak) ve 'justification' (neden önerildiği) içermelidir.\n"
+            "Seçtiğin her ürün için: ürün kodu, ürün adı, 'OzelliklerTR' ve 'BilgiTR' alanlarından alınan en ilgili 3-5 adet anahtar teknik özelliği (özellikle şartnamede aranan) belirt. Bu özellikleri madde madde listele. Ayrıca bu ürünü neden önerdiğine dair kısa ve açıklayıcı bir gerekçe (justification) sun.\n"
+            "Her ürün için ayrıca, şartnameden çıkarılan gereksinimler arasında bu ürünün karşılamadığı (eksik kalan) gereksinimleri de 'unmet_requirements' başlığı altında madde madde listele. Eğer ürün tüm gereksinimleri karşılıyorsa 'Tüm gereksinimler karşılanıyor.' yaz.\n"
+            f"Minimum 3, maksimum {max_products} ürün önerisi yap. Eğer 3'ten az uygun ürün bulursan, bulduğun kadarını öner.\n\n"
+            "Yanıtını SADECE aşağıdaki JSON formatında döndür. 'recommended_products' anahtarı altında bir dizi olmalı, her dizi elemanı 'product_code', 'product_name', 'key_features' (array olarak), 'justification' (neden önerildiği) ve 'unmet_requirements' (array veya string) içermelidir.\n"
             "Ayrıca, 'recommendation_summary' anahtarı altında genel bir özet metin ekle.\n\n"
             f"Örnek JSON Çıktısı Formatı:\n"
             f"```json\n"
@@ -152,13 +153,15 @@ class GeminiService:
             f"       \"product_code\": \"XYZ123\",\n"
             f"       \"product_name\": \"Bullet IP Kamera 4MP\",\n"
             f"       \"key_features\": [\"4MP çözünürlük\", \"30m IR Gece Görüşü\", \"IP67 Dış Ortam Koruması\", \"PoE Destekli\"],\n"
-            f"       \"justification\": \"Şartnamede belirtilen 4MP çözünürlük ve IP67 dış ortam koruması gereksinimlerini tam olarak karşılamaktadır. Ayrıca PoE desteği kurulum kolaylığı sağlar.\"\n"
+            f"       \"justification\": \"Şartnamede belirtilen 4MP çözünürlük ve IP67 dış ortam koruması gereksinimlerini tam olarak karşılamaktadır. Ayrıca PoE desteği kurulum kolaylığı sağlar.\",\n"
+            f"       \"unmet_requirements\": \"Tüm gereksinimler karşılanıyor.\"\n"
             f"     }},\n"
             f"     {{\n"
             f"       \"product_code\": \"ABC456\",\n"
             f"       \"product_name\": \"NVR Kayıt Cihazı 16 Kanal 2HDD\",\n"
             f"       \"key_features\": [\"16 Kanal\", \"Min. 2 Disk Yuvası (10TB)\", \"4K Kayıt Desteği\"],\n"
-            f"       \"justification\": \"Şartnamedeki 16 kanal kapasitesi ve depolama gereksinimlerini karşılamakta olup, mevcut disk kapasitesi şartnameye uygun depolama alanı sunar.\"\n"
+            f"       \"justification\": \"Şartnamedeki 16 kanal kapasitesi ve depolama gereksinimlerini karşılamakta olup, mevcut disk kapasitesi şartnameye uygun depolama alanı sunar.\",\n"
+            f"       \"unmet_requirements\": [\"RAID desteği yok\"]\n"
             f"     }}\n"
             f"   ],\n"
             f"   \"recommendation_summary\": \"Analiz edilen şartnameye göre belirlenen anahtar gereksinimler (çözünürlük, depolama kapasitesi, çevresel dayanıklılık vb.) doğrultusunda en uygun ürünler seçilmiştir. Önerilen ürünler, şartname maddelerini eksiksiz karşılamaktadır.\"\n"

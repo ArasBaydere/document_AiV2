@@ -1,7 +1,7 @@
 # routes/auth.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, session
-# from werkzeug.security import check_password_hash # Şifre hash'leme kullanılmayacağı için kaldırıldı
+from werkzeug.security import check_password_hash # Şifre hash'leme kullanılmayacağı için kaldırıldı
 from utils import add_debug_message
 from flask import current_app # Config'e erişmek için
 
@@ -15,8 +15,8 @@ def login():
 
         users = current_app.config.get('USERS', {}) # Config'den kullanıcıları al
         
-        # Şifreleri doğrudan karşılaştırıyoruz (hash'leme kullanılmadığı için)
-        if username in users and users[username] == password:
+        # Şifreleri hash ile kontrol ediyoruz
+        if username in users and check_password_hash(users[username], password):
             session['logged_in'] = True
             session['username'] = username
             add_debug_message(f"Kullanıcı '{username}' başarılı şekilde giriş yaptı.", level="INFO")

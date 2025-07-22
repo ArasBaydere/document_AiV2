@@ -1,676 +1,532 @@
-/* Genel Ayarlar ve Font */
+/* === MODERN PURPLE & ORANGE THEME === */
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: #f8fafc; /* Hafif gri arka plan */
-    color: #334155; /* Ana metin rengi */
-    display: flex;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #f3e8ff 100%);
+    color: #2d1a3a;
     min-height: 100vh;
-    overflow: hidden; /* Scrollbar'ı ana body'den kaldır */
+    overflow: hidden;
 }
 
-/* Login Sayfası Stilleri */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100%;
-    background: linear-gradient(to bottom right, #3b82f6, #9333ea); /* Mavi-Mor Gradyan */
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.login-box {
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    max-width: 450px;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-}
-
-.login-box h2 {
-    font-size: 2.25rem; /* 36px */
-    font-weight: 800; /* Extra kalın */
-    color: #1a202c; /* Gri 900 */
-    margin-bottom: 1.5rem; /* 24px */
-}
-
-.login-box p {
-    color: #4a5568; /* Gri 600 */
-    margin-bottom: 2rem; /* 32px */
-}
-
-.form-group {
-    margin-bottom: 1.5rem; /* 24px */
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    font-size: 0.875rem; /* 14px */
-    font-weight: 500; /* Orta kalınlık */
-    color: #4a5568; /* Gri 700 */
-    margin-bottom: 0.5rem; /* 8px */
-}
-
-.form-group input {
-    width: 100%;
-    padding: 0.75rem 1rem; /* 12px 16px */
-    border: 1px solid #cbd5e0; /* Gri 300 */
-    border-radius: 0.375rem; /* 6px */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    font-size: 0.875rem; /* 14px */
-    color: #4a5568; /* Gri 700 */
-    box-sizing: border-box; /* Padding ve border'ın genişliğe dahil olmasını sağlar */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #3b82f6; /* Mavi 500 */
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Mavi 500 vurgu */
-}
-
-.error-message {
-    color: #dc2626; /* Kırmızı 600 */
-    font-size: 0.875rem; /* 14px */
-    text-align: center;
-    margin-top: 1rem; /* 16px */
-}
-
-.login-button {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 0.75rem 1rem; /* 12px 16px */
-    border: none;
-    border-radius: 0.375rem; /* 6px */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    font-size: 0.875rem; /* 14px */
-    font-weight: 600; /* Yarı kalın */
-    color: #ffffff;
-    background-color: #2563eb; /* Mavi 600 */
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-}
-
-.login-button:hover {
-    background-color: #1d4ed8; /* Mavi 700 */
-}
-
-/* Giriş Sayfası Animasyonu */
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-    animation: fade-in 0.5s ease-out forwards;
-}
-
-/* Ana Uygulama Düzeni (Flexbox) */
 .app-container {
     display: flex;
-    width: 100%;
-    height: 100vh; /* Tam ekran yüksekliği */
-    transition: all 0.3s ease-in-out; /* Debug paneli açıldığında ana konteynerin genişlemesi için */
+    width: 100vw;
+    height: 100vh;
+    background: none;
 }
 
-/* Sol Panel (Sidebar) Stilleri */
+/* Sidebar */
 .sidebar {
-    width: 288px; /* 72 units * 4px = 288px */
-    background-color: #111827; /* Gri 900 */
-    color: #e5e7eb; /* Beyazımsı */
+    width: 340px;
+    background: linear-gradient(135deg, #7c3aed 60%, #a21caf 100%);
+    color: #fff;
     display: flex;
     flex-direction: column;
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0; /* Küçülmesini engelle */
+    box-shadow: 2px 0 12px rgba(124, 58, 237, 0.07);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    z-index: 2;
 }
-
 .sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #374151; /* Gri 700 */
+    padding: 36px 32px 18px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
-
 .sidebar-header h1 {
-    font-size: 1.5rem; /* 24px */
-    font-weight: 700; /* Kalın */
-    color: #60a5fa; /* Mavi 400 */
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
     margin: 0;
+    text-shadow: 0 2px 8px #a21caf33;
 }
-
 .new-chat-button {
-    background-color: #2563eb; /* Mavi 600 */
-    color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.875rem; /* 14px */
-    font-weight: 600; /* Yarı kalın */
-    transition: background-color 0.2s ease-in-out;
+    background: linear-gradient(90deg, #f59e42 60%, #ff7849 100%);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px #f59e4233;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
     display: flex;
     align-items: center;
-    border: none;
-    cursor: pointer;
+    gap: 8px;
 }
-
 .new-chat-button:hover {
-    background-color: #1d4ed8; /* Mavi 700 */
-}
-
-.new-chat-button svg {
-    height: 20px;
-    width: 20px;
-    margin-right: 4px;
+    background: linear-gradient(90deg, #ff7849 60%, #f59e42 100%);
+    box-shadow: 0 4px 16px #ff784933;
 }
 
 .chat-list {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 16px;
-    list-style: none;
-    margin: 0;
+    padding: 20px 18px 0 18px;
 }
-
 .chat-list .loading-message {
-    color: #9ca3af; /* Gri 400 */
+    color: #f3e8ff;
     text-align: center;
     padding: 16px;
 }
-
 .chat-list-item {
+    background: rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s;
+    box-shadow: 0 1px 4px #a21caf11;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
-    margin-bottom: 8px;
+    gap: 8px;
 }
-
-.chat-list-item:hover {
-    background-color: #374151; /* Gri 700 */
-}
-
-.chat-list-item.selected {
-    background-color: #374151; /* Gri 700 */
-}
-
-.chat-list-item p {
-    margin: 0;
-    color: #e5e7eb; /* Gri 200 */
-    font-weight: 500; /* Orta kalınlık */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-grow: 1;
-}
-
-.chat-list-item small {
-    color: #9ca3af; /* Gri 400 */
-    font-size: 0.75rem; /* 12px */
-    margin-top: 4px;
+.chat-list-item.selected, .chat-list-item:hover {
+    background: linear-gradient(90deg, #a21caf 60%, #7c3aed 100%);
+    box-shadow: 0 2px 8px #a21caf33;
 }
 
 .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid #374151; /* Gri 700 */
+    padding: 24px 32px;
+    border-top: 1px solid #a21caf44;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.875rem; /* 14px */
-    color: #9ca3af; /* Gri 400 */
+    font-size: 1rem;
+    color: #f3e8ff;
 }
-
 .logout-link {
-    color: #f87171; /* Kırmızı 400 */
+    color: #ff7849;
     text-decoration: none;
-    font-weight: 500; /* Orta kalınlık */
-    transition: color 0.2s ease;
+    font-weight: 700;
+    transition: color 0.2s;
 }
-
 .logout-link:hover {
-    color: #ef4444; /* Kırmızı 500 */
+    color: #fff;
 }
 
-/* Ana Sohbet Alanı (Main Content) Stilleri */
+/* Main Chat Area */
 .chat-main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    background-color: #f1f5f9; /* Gri 100 */
-    transition: margin-right 0.3s ease-in-out; /* Debug paneli açıldığında sağdan boşluk bırak */
+    background: linear-gradient(135deg, #fff 60%, #f3e8ff 100%);
+    border-radius: 32px 0 0 32px;
+    box-shadow: 0 0 32px #a21caf11;
+    margin: 16px 16px 16px 0;
+    overflow: hidden;
 }
-
 .chat-header {
-    background-color: #ffffff;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid #e2e8f0; /* Gri 200 */
+    background: #fff;
+    padding: 28px 32px 18px 32px;
+    box-shadow: 0 2px 12px #a21caf11;
+    border-bottom: 1px solid #f3e8ff;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
-
 .chat-header h2 {
-    font-size: 1.25rem; /* 20px */
-    font-weight: 600; /* Yarı kalın */
-    color: #1e293b; /* Gri 800 */
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #7c3aed;
     margin: 0;
 }
-
 .chat-actions {
     display: flex;
-    gap: 8px; /* 2 birim * 4px = 8px */
+    gap: 10px;
 }
-
 .chat-action-button {
     background: none;
     border: none;
-    color: #64748b; /* Gri 500 */
-    padding: 8px;
-    border-radius: 9999px; /* Tam yuvarlak */
+    color: #a21caf;
+    padding: 10px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    display: flex; /* SVG'yi ortalamak için */
+    transition: background 0.15s, color 0.15s;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
-
 .chat-action-button:hover {
-    background-color: #e2e8f0; /* Gri 200 */
-    color: #2563eb; /* Mavi 600 */
+    background: #f3e8ff;
+    color: #ff7849;
 }
-
 .chat-action-button.delete-button:hover {
-    color: #dc2626; /* Kırmızı 600 */
+    color: #e11d48;
 }
 
-.chat-action-button svg {
-    height: 20px;
-    width: 20px;
-}
-
-
+/* Chat Messages */
 .chat-messages-container {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 32px 40px 32px 40px;
     display: flex;
     flex-direction: column;
-    gap: 16px; /* Boşluk y-4 */
+    gap: 18px;
+    background: none;
 }
-
 .empty-chat-message {
     text-align: center;
-    color: #64748b; /* Gri 500 */
-    margin-top: 40px; /* mt-10 */
+    color: #a21caf;
+    margin-top: 40px;
+    font-size: 1.1rem;
 }
 
-.empty-chat-message p {
-    margin: 0;
-    font-size: 1.125rem; /* lg */
-}
-.empty-chat-message p:nth-child(2) {
-    margin-top: 8px; /* mt-2 */
-    font-size: 1rem; /* md */
-}
-.empty-chat-message p:nth-child(3) {
-    margin-top: 16px; /* mt-4 */
-    font-size: 0.875rem; /* sm */
-    color: #94a3b8; /* Gri 400 */
-}
-
-/* Mesaj Baloncukları */
+/* Message Bubbles */
 .chat-message {
     display: flex;
 }
-
 .chat-message.user {
     justify-content: flex-end;
 }
-
 .chat-message.bot {
     justify-content: flex-start;
 }
-
 .message-bubble {
-    max-width: 70%; /* max-w-3xl (768px'in %70'i gibi) */
-    padding: 12px 20px; /* px-5 py-3 */
-    border-radius: 12px; /* rounded-xl */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* shadow-md */
+    max-width: 70%;
+    padding: 16px 24px;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px #a21caf11;
+    font-size: 1.05rem;
     position: relative;
-    font-size: 0.9375rem; /* yaklaşık 15px, text-gray-800 */
+    background: linear-gradient(90deg, #f3e8ff 60%, #fff 100%);
+    color: #2d1a3a;
+    margin-bottom: 2px;
+    word-break: break-word;
 }
-
 .chat-message.user .message-bubble {
-    background-color: #e0f2fe; /* Mavi 100 */
-    color: #1e293b; /* Gri 800 */
-    border-bottom-right-radius: 4px; /* Köşe düzeltme */
+    background: linear-gradient(90deg, #7c3aed 60%, #a21caf 100%);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 2px 12px #7c3aed33;
 }
-
 .chat-message.bot .message-bubble {
-    background-color: #f1f5f9; /* Gri 100 */
-    color: #1e293b; /* Gri 800 */
-    border-bottom-left-radius: 4px; /* Köşe düzeltme */
+    background: #fff;
+    color: #a21caf;
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 2px 12px #f59e4233;
 }
-
 .message-timestamp {
     position: absolute;
-    font-size: 0.75rem; /* text-xs */
-    color: #64748b; /* Gri 500 */
-    bottom: -20px; /* -bottom-5 (5*4px) */
-    white-space: nowrap; /* Saati tek satırda tut */
+    font-size: 0.8rem;
+    color: #a21caf99;
+    bottom: -20px;
+    white-space: nowrap;
 }
-
 .chat-message.user .message-timestamp {
     right: 0;
 }
-
 .chat-message.bot .message-timestamp {
     left: 0;
 }
 
-
-/* Mesaj Giriş Alanı Stilleri */
-.chat-input-area {
-    background-color: #ffffff;
-    padding: 16px;
-    border-top: 1px solid #e2e8f0; /* Gri 200 */
+/* Bot Yanıtı Bekleme Baloncuğu */
+.bot-typing-bubble {
+    background: #fff;
+    color: #a21caf;
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 2px 12px #f59e4233;
+    display: flex;
+    align-items: center;
+    font-size: 1.08rem;
+    font-weight: 500;
+    min-width: 180px;
+    min-height: 32px;
+    gap: 8px;
+}
+.typing-dots {
+    display: inline-block;
+    letter-spacing: 2px;
+}
+.typing-dots span {
+    display: inline-block;
+    font-size: 1.5em;
+    color: #a21caf;
+    opacity: 0.5;
+    animation: typingBlink 1.2s infinite;
+}
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typingBlink {
+    0%, 80%, 100% { opacity: 0.5; }
+    40% { opacity: 1; }
 }
 
+/* Input Area */
+.chat-input-area {
+    background: #fff;
+    padding: 20px 32px;
+    border-top: 1px solid #f3e8ff;
+}
 .message-input-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px; /* boşluk x-3 */
-    transition: opacity 0.2s ease;
+    gap: 14px;
+    transition: opacity 0.2s;
 }
-
 .message-input-wrapper.disabled {
     opacity: 0.5;
-    pointer-events: none; /* Tıklama olaylarını devre dışı bırak */
+    pointer-events: none;
 }
-
 .message-input-wrapper input[type="file"] {
-    display: none; /* Gizli dosya girişi */
+    display: none;
 }
-
 .attach-button, .send-message-button {
     background: none;
     border: none;
-    padding: 8px;
-    border-radius: 9999px; /* Tam yuvarlak */
+    padding: 10px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background 0.15s, color 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
 .attach-button {
-    color: #475569; /* Gri 600 */
+    color: #a21caf;
 }
 .attach-button:hover {
-    color: #2563eb; /* Mavi 600 */
-    background-color: #e2e8f0; /* Gri 200 */
+    color: #ff7849;
+    background: #f3e8ff;
 }
-
 .attach-button svg, .send-message-button svg {
-    height: 24px; /* h-6 */
-    width: 24px; /* w-6 */
+    height: 26px;
+    width: 26px;
 }
-
 .file-name-display {
-    font-size: 0.875rem; /* text-sm */
-    color: #475569; /* gri 600 */
+    font-size: 0.95rem;
+    color: #a21caf;
     font-style: italic;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* İhtiyaca göre ayarlanabilir */
+    max-width: 180px;
 }
-
 .message-input-wrapper input[type="text"] {
     flex-grow: 1;
-    padding: 10px 16px; /* px-4 py-2 */
-    border-radius: 8px; /* rounded-lg */
-    border: 1px solid #cbd5e1; /* Gri 300 */
-    font-size: 1rem;
-    color: #334155; /* Gri 700 */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1.5px solid #a21caf44;
+    font-size: 1.08rem;
+    color: #2d1a3a;
+    background: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .message-input-wrapper input[type="text"]:focus {
     outline: none;
-    border-color: #3b82f6; /* Mavi 500 */
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Mavi 500 vurgu */
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px #a21caf22;
 }
-
 .send-message-button {
-    background-color: #2563eb; /* Mavi 600 */
-    color: #ffffff;
-    border-radius: 8px;
+    background: linear-gradient(90deg, #f59e42 60%, #ff7849 100%);
+    color: #fff;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px #f59e4233;
 }
-
 .send-message-button:hover {
-    background-color: #1d4ed8; /* Mavi 700 */
+    background: linear-gradient(90deg, #ff7849 60%, #f59e42 100%);
+    box-shadow: 0 4px 16px #ff784933;
 }
 
-/* Yükleniyor Göstergesi */
-.loading-indicator {
-    text-align: center;
-    color: #2563eb; /* Mavi 600 */
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-weight: 500;
+/* Toast/Alert */
+#toast-container {
+    z-index: 9999;
+}
+.toast {
+    background: linear-gradient(90deg, #a21caf 60%, #ff7849 100%);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #a21caf33;
+    padding: 16px 32px;
+    margin: 8px 0;
+    font-size: 1.08rem;
+    opacity: 0.97;
+    transition: opacity 0.3s;
+}
+.toast-error {
+    background: linear-gradient(90deg, #a21caf 60%, #e11d48 100%);
+}
+.toast-success {
+    background: linear-gradient(90deg, #f59e42 60%, #27ae60 100%);
 }
 
-.loading-indicator .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-top: 4px solid #2563eb;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-
-/* Özel Kaydırma Çubuğu Stilleri */
-.chat-list::-webkit-scrollbar,
-.chat-messages-container::-webkit-scrollbar,
-.debug-log-content::-webkit-scrollbar {
-    width: 8px;
-}
-.chat-list::-webkit-scrollbar-track,
-.chat-messages-container::-webkit-scrollbar-track,
-.debug-log-content::-webkit-scrollbar-track {
-    background: #e2e8f0; /* Gri 200 */
-    border-radius: 10px;
-}
-.chat-list::-webkit-scrollbar-thumb,
-.chat-messages-container::-webkit-scrollbar-thumb,
-.debug-log-content::-webkit-scrollbar-thumb {
-    background: #94a3b8; /* Gri 400 */
-    border-radius: 10px;
-}
-.chat-list::-webkit-scrollbar-thumb:hover,
-.chat-messages-container::-webkit-scrollbar-thumb:hover,
-.debug-log-content::-webkit-scrollbar-thumb:hover {
-    background: #64748b; /* Gri 500 */
-}
-
-/* Markdown Rendering için Temel Stil */
-.markdown-content p, .markdown-content ul, .markdown-content ol, .markdown-content h1, .markdown-content h2, .markdown-content h3 {
-    margin-bottom: 0.5em; /* Mesaj içinde paragraf araları */
-}
-.markdown-content ul, .markdown-content ol {
-    padding-left: 1.5em;
-    list-style-type: disc; /* veya circle/square */
-}
-.markdown-content ul li {
-    margin-bottom: 0.25em;
-}
-.markdown-content strong {
-    font-weight: 600; /* Yarı kalın */
-}
-.markdown-content pre {
-    background-color: #e2e8f0; /* Gri 200 */
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    overflow-x: auto;
-    margin-bottom: 1em;
-}
-.markdown-content code {
-    font-family: monospace;
-    background-color: #e2e8f0; /* Gri 200 */
-    padding: 0.2em 0.4em;
-    border-radius: 0.25em;
-}
-.markdown-content pre code {
-    background-color: transparent;
-    padding: 0;
-    border-radius: 0;
-}
-.markdown-content a {
-    color: #2563eb; /* Mavi 600 */
-    text-decoration: underline;
-}
-
-/* --- DEBUG PANEL STILLERİ --- */
+/* Debug Panel */
 .debug-panel {
     position: fixed;
     top: 0;
-    right: -400px; /* Başlangıçta gizli */
+    right: -400px;
     width: 400px;
     height: 100%;
-    background-color: #1f2937; /* Gri 800 */
-    color: #e5e7eb; /* Beyazımsı */
-    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    color: #2d1a3a;
+    box-shadow: -4px 0 24px #a21caf33;
     display: flex;
     flex-direction: column;
-    transition: right 0.3s ease-in-out;
-    z-index: 1000; /* Diğer her şeyin üzerinde olsun */
+    transition: right 0.3s;
+    z-index: 1000;
 }
-
 .debug-panel.open {
-    right: 0; /* Açıldığında görünür */
+    right: 0;
 }
-
-/* Debug paneli açıkken ana içeriğin boşluk bırakması */
 .app-container.debug-open .chat-main {
-    margin-right: 400px; /* Debug panelinin genişliği kadar boşluk */
+    margin-right: 400px;
 }
-
-
 .debug-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid #374151; /* Gri 700 */
+    padding: 20px 28px;
+    border-bottom: 1px solid #f3e8ff44;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .debug-header h3 {
-    font-size: 1.125rem; /* 18px */
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
     margin: 0;
-    color: #60a5fa; /* Mavi 400 */
+    color: #a21caf;
 }
-
 .debug-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
-
 .debug-action-button {
-    background: none;
+    background: #f3e8ff;
     border: none;
-    color: #9ca3af; /* Gri 400 */
-    padding: 6px;
+    color: #ff7849;
+    padding: 10px;
     border-radius: 9999px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: background 0.15s, color 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-
-.debug-action-button:hover {
-    background-color: #374151; /* Gri 700 */
-    color: #e5e7eb; /* Beyazımsı */
-}
-
 .debug-action-button svg {
-    height: 20px;
-    width: 20px;
+    color: #ff7849 !important;
+    fill: #ff7849 !important;
+    width: 28px;
+    height: 28px;
+    opacity: 1 !important;
+    z-index: 1101;
+    position: relative;
 }
-
+.debug-action-button:hover {
+    background: #a21caf;
+}
+.debug-action-button:hover svg {
+    color: #fff !important;
+    fill: #fff !important;
+}
 .debug-log-content {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: 18px;
     font-family: monospace;
-    font-size: 0.875rem; /* 14px */
-    line-height: 1.4;
-    color: #cbd5e1; /* Gri 300 */
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #2d1a3a;
+    background: #fff;
 }
-
 .log-entry {
-    margin-bottom: 8px;
-    padding: 6px 8px;
-    border-radius: 4px;
-    word-break: break-word; /* Uzun kelimeleri kırmak için */
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    word-break: break-word;
+    color: #fff;
+    font-weight: 600;
 }
-
-.log-entry strong {
-    font-weight: 700;
-}
-
 .log-entry.INFO {
-    background-color: #2d3748; /* Gri 800 biraz daha açık */
-    color: #e2e8f0; /* Gri 200 */
+    background: linear-gradient(90deg, #a21caf 60%, #7c3aed 100%);
 }
-
 .log-entry.WARNING {
-    background-color: #fbbf24; /* Amber 400 */
-    color: #1f2937; /* Koyu metin */
-    font-weight: 600;
+    background: linear-gradient(90deg, #f59e42 60%, #ff7849 100%);
 }
-
 .log-entry.ERROR {
-    background-color: #ef4444; /* Kırmızı 500 */
-    color: #ffffff;
-    font-weight: 600;
+    background: linear-gradient(90deg, #ff7849 60%, #e11d48 100%);
 }
-
 .log-entry.CRITICAL {
-    background-color: #b91c1c; /* Kırmızı 700 */
-    color: #ffffff;
-    font-weight: 700;
-    border: 1px solid #7f1d1d;
+    background: linear-gradient(90deg, #7c3aed 60%, #a21caf 100%);
+    border: 2px solid #fff2;
+    box-shadow: 0 0 8px #a21caf88;
 }
-
-.log-entry.DEBUG { /* Yeni DEBUG seviyesi */
-    background-color: #3b82f6; /* Mavi 500 */
-    color: #ffffff;
+.log-entry.DEBUG {
+    background: linear-gradient(90deg, #ff7849 60%, #f59e42 100%);
+    color: #fff;
 }
-
 .log-entry .timestamp {
-    color: #94a3b8; /* Gri 400 */
-    margin-right: 8px;
+    color: #f3e8ff;
+    margin-right: 10px;
     font-weight: normal;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: #a21caf44;
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #a21caf88;
+}
+.debug-action-button svg {
+    color: #a21caf !important;
+    fill: #a21caf !important;
+    stroke: #a21caf !important;
+    width: 28px;
+    height: 28px;
+    opacity: 1 !important;
+    display: inline !important;
+    visibility: visible !important;
+}
+.debug-action-button:hover svg {
+    color: #fff !important;
+    fill: #fff !important;
+    stroke: #fff !important;
+}
+
+.debug-header, .debug-actions {
+    position: relative;
+    z-index: 1100;
+}
+.debug-action-button svg {
+    color: #ff7849 !important;
+    fill: #ff7849 !important;
+    width: 28px;
+    height: 28px;
+    opacity: 1 !important;
+    z-index: 1101;
+    position: relative;
+}
+
+.chat-action-button svg,
+.delete-button svg,
+#toggleDebugBtn svg {
+    color: #a21caf !important;
+    fill: #a21caf !important;
+    stroke: #a21caf !important;
+    width: 28px;
+    height: 28px;
+    opacity: 1 !important;
+    display: inline !important;
+    visibility: visible !important;
+    transition: color 0.15s, fill 0.15s, stroke 0.15s;
+}
+.chat-action-button:hover svg,
+.delete-button:hover svg,
+#toggleDebugBtn:hover svg {
+    color: #fff !important;
+    fill: #fff !important;
+    stroke: #fff !important;
 }
